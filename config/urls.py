@@ -16,7 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.http import HttpResponse
+from apps.tasks.views import task_list, task_detail
+
+def home(request):
+    return HttpResponse('<h1>Welcome to TaskFlow</h1><p>TaskFlow is a simple task management system.</p>')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', home),
+    path('tasks/', task_list),
+    path('detail/', task_detail),
 ]
