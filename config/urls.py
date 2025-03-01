@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponse
 from apps.tasks.views import task_list, task_detail
+from apps.tasks.views import register_view, login_view, logout_view
 
 def home(request):
     return HttpResponse('<h1>Welcome to TaskFlow</h1><p>TaskFlow is a simple task management system.</p>')
@@ -27,4 +28,7 @@ urlpatterns = [
     path('', home),
     path('tasks/', task_list, name='task_list'),
     path('detail/', task_detail),
+    path('register/', register_view, name='register'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
 ]

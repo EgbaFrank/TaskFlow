@@ -11,6 +11,22 @@
         margin: 0;
         padding: 20px;
       }
+      .navbar {
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .navbar a {
+        color: white;
+        text-decoration: none;
+        margin: 0 10px;
+      }
+      .navbar a:hover {
+        text-decoration: underline;
+      }
       h1 {
         color: #333;
         text-align: center;
@@ -84,9 +100,28 @@
         margin-left: 20px;
         color: #888;
       }
+      .logout-button {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+      }
     </style>
   </head>
   <body>
+    <div class="navbar">
+      <div class="navbar-left">
+        <a href="{% url 'task_list' %}">Home</a>
+        <a href="{% url 'register' %}">Register</a>
+        <a href="{% url 'login' %}">Login</a>
+      </div>
+      <div class="navbar-right">
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" style="background: none; color: #0056b3; cursor: pointer;">Logout</button>
+        </form>
+      </div>
+    </div>
+
     <h1>Task List</h1>
 
     <!-- Display messages -->
