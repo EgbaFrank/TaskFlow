@@ -5,6 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Task List</title>
+  <link
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -121,6 +125,12 @@
       color: #888;
     }
 
+    .task-overdue .task-title,
+    .task-overdue .task-description,
+    .task-overdue .task-due-date {
+      color: red;
+    }
+
     .logout-button {
       display: flex;
       justify-content: flex-end;
@@ -161,6 +171,33 @@
       font-size: 1.2em;
       color: #333;
     }
+
+    .filter-sort-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .filter-options,
+    .sort-options {
+      display: flex;
+    }
+
+    .filter-options a,
+    .sort-options a {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin: 0 5px;
+      display: inline-block;
+    }
+
+    .filter-options a:hover,
+    .sort-options a:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 
@@ -184,7 +221,12 @@
   <!-- Display messages -->
   <div class="messages">
     {% for message in messages %}
-    <div class="message {{ message.tags }}">{{ message }}</div>
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
     {% endfor %}
   </div>
 
@@ -200,10 +242,26 @@
     <button type="submit">Add Task</button>
   </form>
 
+  <!-- Filtering and Sorting Options -->
+  <div class="filter-sort-container">
+    <div class="filter-options">
+      <span>Filter: </span>
+      <a href="?filter=all{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">All</a>
+      <a href="?filter=completed{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Completed</a>
+      <a href="?filter=pending{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Pending</a>
+    </div>
+    <div class="sort-options">
+      <span>Sort: </span>
+      <a href="?sort=default{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">Default Sort</a>
+      <a href="?sort=due_date{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">Sort by Due Date</a>
+      <a href="?sort=created_at{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">Sort by Created At</a>
+    </div>
+  </div>
+
   <!-- List of tasks -->
   <ul>
     {% for task in tasks %}
-    <li>
+    <li class="{% if task.due_date and not task.completed and task.due_date < today %}task-overdue{% endif %}">
       <div class="task-title">
         {{ task.title }} - <span class="task-status">{% if task.completed %} ✅ Done {% else %} ⏳ Pending {% endif %}</span>
       </div>
@@ -218,6 +276,11 @@
     <p>No tasks available.</p>
     {% endfor %}
   </ul>
+
+  <!-- Include Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

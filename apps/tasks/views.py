@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
 from .models import Task
+from datetime import date, timedelta
 from .forms import TaskForm, RegisterForm
 from django.contrib.auth.models import User
 
@@ -12,7 +13,28 @@ from django.contrib.auth.models import User
 # Create your views here.
 @login_required
 def task_list(request):
-    tasks = Task.objects.filter(user=request.user).order_by("completed", "due_date")
+    tasks = Task.objects.filter(user=request.user)
+
+    filter_status = request.GET.get("filter")
+    allowed_sort = ["due_date", "created_at"]
+    sort_by = request.GET.get("sort")
+    today = date.today()
+    soon_due_tasks = tasks.filter(
+        due_date__lte=today + timedelta(days=2), completed=False
+    )
+    if soon_due_tasks.exists():
+        messages.warning(request, "You have tasks due soon! ⏳")
+
+    if filter_status == "completed":
+        tasks = tasks.filter(completed=True)
+    elif filter_status == "pending":
+        tasks = tasks.filter(completed=False)
+
+    if sort_by not in allowed_sort or sort_by == "default":
+        tasks = tasks.order_by("completed", "due_date")
+    else:
+        tasks = tasks.order_by(sort_by)
+
     form = TaskForm()
     if request.method == "POST":
         form = TaskForm(request.POST)
@@ -23,7 +45,9 @@ def task_list(request):
             messages.success(request, "Task added successfully!")
             return redirect("task_list")
     return render(
-        request, "tasks.html", {"tasks": tasks, "form": form, "user": request.user}
+        request,
+        "tasks.html",
+        {"tasks": tasks, "form": form, "user": request.user, "today": today},
     )
 
 
@@ -39,6 +63,7 @@ def task_update(request, task_id):
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
+            messages.success(request, "Task updated successfully!")
             return redirect("task_list")
     return render(request, "task_update.html", {"form": form})
 
@@ -52,6 +77,7 @@ def task_delete(request, task_id):
 
     if request.method == "POST":
         task.delete()
+        messages.success(request, "Task deleted successfully")
         return redirect("task_list")
 
     return render(request, "task_confirm_delete.html", {"task": task})
