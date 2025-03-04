@@ -4,8 +4,11 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
 from django.contrib import messages
 from .models import Task
 from .serializer import TaskSerializer
@@ -16,17 +19,37 @@ from django.contrib.auth.models import User
 
 # Create your views here.
 # API views
+
+class CustomPagination(LimitOffsetPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 10
+
+
 class ApiTaskList(ListCreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ["completed", "due_date", "priority"]
+    ordering_fields = ["due_date", "created_at"]
+    ordering = ["due_date"]
+    search_fields = ["title", "description"]
+    pagination_class = CustomPagination
+
 
 class ApiTaskDetail(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ["completed"]
+    ordering_fields = ["due_date", "created_at"]
+    search_fields = ["title", "description"]
+    pagination_class = CustomPagination
+
 
 # Server rendering logic
 @login_required
