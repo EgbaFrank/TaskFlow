@@ -3,14 +3,32 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.authentication import TokenAuthentication
 from django.contrib import messages
 from .models import Task
+from .serializer import TaskSerializer
 from datetime import date, timedelta
 from .forms import TaskForm, RegisterForm
 from django.contrib.auth.models import User
 
 
 # Create your views here.
+# API views
+class ApiTaskList(ListCreateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [AllowAny]
+
+class ApiTaskDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+# Server rendering logic
 @login_required
 def task_list(request):
     tasks = Task.objects.filter(user=request.user)
